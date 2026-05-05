@@ -10,15 +10,16 @@ const app = express();
 app.use(helmet());                    // sets secure HTTP headers    // strips $ and . from req body/query to prevent NoSQL injection
 
 // Rate limiting — 100 requests per 15 minutes per IP
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { status: 'error', message: 'Too many requests. Please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api', limiter);
-
+if (process.env.NODE_ENV !== 'test') {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { status: 'error', message: 'Too many requests. Please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use('/api', limiter);
+}
 // ── General middleware ────────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 app.use(express.json({ limit: '10kb' }));
